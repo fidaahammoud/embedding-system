@@ -1,0 +1,15 @@
+FROM quay.io/docling-project/docling-serve-cpu
+
+USER root
+
+# Static ffmpeg binary — UBI repos don't carry ffmpeg
+RUN mkdir /tmp/ffmpeg && \
+    curl -fsSL "https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz" | \
+    tar -xJ -C /tmp/ffmpeg --strip-components=1 && \
+    mv /tmp/ffmpeg/ffmpeg /usr/local/bin/ffmpeg && \
+    rm -rf /tmp/ffmpeg
+
+RUN pip install --no-cache-dir openai-whisper
+
+# Pre-download the Whisper base model so first request doesn't time out
+RUN python -c "import whisper; whisper.load_model('base')"
